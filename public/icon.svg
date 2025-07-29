@@ -1,0 +1,9 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="512" height="512" rx="128" fill="#EF4444"/>
+  <path d="M256 128C256 128 224 160 224 224C224 288 256 320 256 320C256 320 288 288 288 224C288 160 256 128 256 128Z" fill="white"/>
+  <path d="M192 192C192 192 160 208 160 256C160 304 192 320 192 320" stroke="white" stroke-width="24" stroke-linecap="round"/>
+  <path d="M320 192C320 192 352 208 352 256C352 304 320 320 320 320" stroke="white" stroke-width="24" stroke-linecap="round"/>
+  <path d="M128 224C128 224 96 232 96 256C96 280 128 288 128 288" stroke="white" stroke-width="16" stroke-linecap="round"/>
+  <path d="M384 224C384 224 416 232 416 256C416 280 384 288 384 288" stroke="white" stroke-width="16" stroke-linecap="round"/>
+  <text x="256" y="420" font-family="Arial, sans-serif" font-size="48" font-weight="bold" text-anchor="middle" fill="white">VN TTS</text>
+</svg>

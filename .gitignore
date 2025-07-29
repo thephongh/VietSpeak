@@ -18,7 +18,7 @@ dist/
 .env.test.local
 .env.production.local
 
-# Python
+# Python (legacy)
 __pycache__/
 *.py[cod]
 *$py.class
@@ -44,6 +44,8 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
+backend.log
+frontend.log
 
 # Runtime data
 pids
@@ -86,6 +88,19 @@ deploy-instructions-*.txt
 coverage/
 .nyc_output
 
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Legacy folders (can be removed after migration)
+# Uncomment these after migration is complete:
+# /frontend/
+# /backend/
+# /scripts/
+# /docs/
+
 # Misc
 *.tgz
 *.tar.gz
+*.pem
+.serena/
