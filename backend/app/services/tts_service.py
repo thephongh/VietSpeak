@@ -1,8 +1,9 @@
 from gtts import gTTS
 import os
 import uuid
-from typing import Optional
+from typing import Optional, Dict, List
 from app.core.config import settings
+from app.services.text_processor import TextProcessor
 import librosa
 import soundfile as sf
 import numpy as np
@@ -20,16 +21,28 @@ class TTSService:
         text: str, 
         language: str = 'vi',
         speed: float = 1.0,
-        voice_id: Optional[str] = None
-    ) -> str:
+        voice_id: Optional[str] = None,
+        clean_text: bool = True
+    ) -> Dict[str, any]:
         """
-        Synthesize text to speech and return audio file path
+        Synthesize text to speech and return audio info
         """
         if language not in self.supported_languages:
             raise ValueError(f"Unsupported language: {language}")
         
-        if len(text) > settings.max_text_length:
+        # Process text if requested
+        processed_text = text
+        if clean_text:
+            processed_text = TextProcessor.clean_text(text)
+            
+        if len(processed_text) > settings.max_text_length:
             raise ValueError(f"Text too long. Maximum length: {settings.max_text_length}")
+        
+        # Auto-detect language if not specified
+        if language == 'auto':
+            language = TextProcessor.detect_language(processed_text)
+            if language == 'unknown':
+                language = 'vi'  # Default to Vietnamese
         
         # Generate unique filename
         audio_id = str(uuid.uuid4())
@@ -38,7 +51,11 @@ class TTSService:
         
         try:
             # Create TTS
-            tts = gTTS(text=text, lang=self.supported_languages[language], slow=False)
+            tts = gTTS(
+                text=processed_text, 
+                lang=self.supported_languages[language], 
+                slow=(speed < 0.8)
+            )
             tts.save(temp_path)
             
             # Process audio (convert to WAV and adjust speed if needed)
@@ -55,7 +72,28 @@ class TTSService:
             if os.path.exists(temp_path):
                 os.remove(temp_path)
             
-            return audio_id
+            # Get text statistics
+            text_stats = TextProcessor.get_text_stats(processed_text)
+            
+            return {
+                "audio_id": audio_id,
+                "original_text": text,
+                "processed_text": processed_text,
+                "language": language,
+                "speed": speed,
+                "voice_id": voice_id,
+                "stats": {
+                    "characters": text_stats.characters,
+                    "words": text_stats.words,
+                    "sentences": text_stats.sentences,
+                    "estimated_duration": text_stats.estimated_duration
+                },
+                "file_info": {
+                    "path": final_path,
+                    "format": "wav",
+                    "sample_rate": sr
+                }
+            }
             
         except Exception as e:
             # Clean up files in case of error

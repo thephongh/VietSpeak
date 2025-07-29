@@ -14,10 +14,14 @@ class TTSRequest(BaseModel):
     language: str = "vi"
     speed: float = 1.0
     voice_id: Optional[str] = None
+    clean_text: bool = True
 
 class TTSResponse(BaseModel):
     audio_id: str
     message: str
+    stats: Optional[dict] = None
+    processed_text: Optional[str] = None
+    language: Optional[str] = None
 
 @router.post("/synthesize", response_model=TTSResponse)
 async def synthesize_text(request: TTSRequest):
@@ -27,26 +31,32 @@ async def synthesize_text(request: TTSRequest):
         storage_service = LocalStorageService()
         
         # Synthesize text
-        audio_id = await tts_service.synthesize_text(
+        result = await tts_service.synthesize_text(
             text=request.text,
             language=request.language,
             speed=request.speed,
-            voice_id=request.voice_id
+            voice_id=request.voice_id,
+            clean_text=request.clean_text
         )
         
         # Save metadata
         metadata = {
-            "text": request.text,
-            "language": request.language,
-            "speed": request.speed,
-            "voice_id": request.voice_id,
-            "audio_id": audio_id
+            "original_text": result["original_text"],
+            "processed_text": result["processed_text"],
+            "language": result["language"],
+            "speed": result["speed"],
+            "voice_id": result["voice_id"],
+            "stats": result["stats"],
+            "file_info": result["file_info"]
         }
-        storage_service.save_audio_metadata(audio_id, metadata)
+        storage_service.save_audio_metadata(result["audio_id"], metadata)
         
         return TTSResponse(
-            audio_id=audio_id,
-            message="Text synthesized successfully"
+            audio_id=result["audio_id"],
+            message="Text synthesized successfully",
+            stats=result["stats"],
+            processed_text=result["processed_text"],
+            language=result["language"]
         )
         
     except Exception as e:
