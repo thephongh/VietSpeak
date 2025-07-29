@@ -14,3 +14,6 @@ torchaudio>=2.1.0
 gtts>=2.3.0
 soundfile>=0.12.0
 requests>=2.31.0
+# Voice cloning support
+TTS>=0.22.0
+pydantic-settings>=2.0.0

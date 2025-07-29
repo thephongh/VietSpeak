@@ -157,21 +157,30 @@ async def get_voice_profiles():
         storage_service = LocalStorageService()
         profiles = storage_service.get_all_voice_profiles()
         
-        return [
-            VoiceProfileResponse(
-                voice_id=profile["voice_id"],
-                name=profile["name"],
-                language=profile["language"],
-                description=profile.get("description"),
-                created_at=profile["created_at"],
-                sample_duration=profile.get("sample_duration"),
-                quality_score=profile.get("quality_score")
-            )
-            for profile in profiles
-        ]
+        response_profiles = []
+        for profile in profiles:
+            try:
+                response_profiles.append(VoiceProfileResponse(
+                    voice_id=profile["voice_id"],
+                    name=profile["name"],
+                    language=profile["language"],
+                    description=profile.get("description"),
+                    created_at=profile["created_at"],
+                    sample_duration=profile.get("sample_duration"),
+                    quality_score=profile.get("quality_score")
+                ))
+            except KeyError as e:
+                print(f"Skipping invalid profile missing key: {e}")
+                continue
+            except Exception as e:
+                print(f"Error processing profile: {e}")
+                continue
+        
+        return response_profiles
         
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(f"Error in get_voice_profiles: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to load voice profiles: {str(e)}")
 
 @router.get("/profiles/{voice_id}", response_model=VoiceProfileResponse)
 async def get_voice_profile(voice_id: str):

@@ -81,18 +81,17 @@ export function VoiceControls({
   };
 
   return (
-    <Card className={className}>
+    <Card className={`bg-white/80 backdrop-blur-sm border-red-100 shadow-lg hover:shadow-xl transition-all duration-300 ${className}`}>
       <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg flex items-center space-x-2">
-            <Gauge className="h-5 w-5" />
+          <CardTitle className="text-lg flex items-center space-x-2 text-gray-800">
+            <Gauge className="h-5 w-5 text-red-600" />
             <span>Voice Controls</span>
           </CardTitle>
           <Button 
-            variant="outline" 
             size="sm" 
             onClick={handleReset}
-            className="text-xs"
+            className="text-xs bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200"
           >
             <RotateCcw className="h-3 w-3 mr-1" />
             Reset

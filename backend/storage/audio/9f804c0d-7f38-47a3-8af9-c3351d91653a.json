@@ -1,0 +1,20 @@
+{
+  "original_text": "Xin chào! Đây là mẫu văn bản tiếng Việt để kiểm tra chức năng chuyển đổi văn bản thành giọng nói.",
+  "processed_text": "Xin chào! Đây là mẫu văn bản tiếng Việt để kiểm tra chức năng chuyển đổi văn bản thành giọng nói.",
+  "language": "vi",
+  "speed": 1.0,
+  "voice_id": "gtts_vi",
+  "stats": {
+    "characters": 97,
+    "words": 21,
+    "sentences": 2,
+    "estimated_duration": 8
+  },
+  "file_info": {
+    "path": "storage/audio/9f804c0d-7f38-47a3-8af9-c3351d91653a.wav",
+    "format": "wav",
+    "sample_rate": 22050
+  },
+  "created_at": "2025-07-29T21:06:57.000552",
+  "file_path": "9f804c0d-7f38-47a3-8af9-c3351d91653a.wav"
+}

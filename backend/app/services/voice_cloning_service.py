@@ -30,11 +30,21 @@ class VoiceCloningService:
     def _initialize_xtts(self):
         """Initialize XTTS model for voice cloning"""
         try:
-            # Load XTTS-v2 model
-            self.xtts_model = TTS("tts_models/multilingual/multi-dataset/xtts_v2")
-            print("XTTS model loaded successfully")
+            # Use the standard multilingual XTTS v2 model which works best
+            model_name = "tts_models/multilingual/multi-dataset/xtts_v2"
+            
+            print(f"Loading XTTS model: {model_name}")
+            self.xtts_model = TTS(model_name)
+            print(f"Successfully loaded XTTS model: {model_name}")
+            
+            # Verify model supports required languages
+            if hasattr(self.xtts_model, 'languages'):
+                supported_langs = self.xtts_model.languages
+                print(f"Supported languages: {supported_langs}")
+                
         except Exception as e:
-            print(f"Failed to load XTTS model: {e}")
+            print(f"Failed to initialize XTTS model: {e}")
+            print("Falling back to basic TTS mode")
             self.fallback_mode = True
     
     async def create_voice_profile(
@@ -172,7 +182,7 @@ class VoiceCloningService:
                 audio, sample_rate = librosa.load(output_path, sr=None)
             
             return {
-                "sample_rate": sample_rate,
+                "sample_rate": int(sample_rate),
                 "method": "xtts"
             }
             
@@ -180,13 +190,29 @@ class VoiceCloningService:
             raise Exception(f"XTTS synthesis failed: {str(e)}")
     
     def _run_xtts_synthesis(self, text: str, speaker_wav: str, output_path: str, language: str):
-        """Run XTTS synthesis (blocking operation)"""
-        self.xtts_model.tts_to_file(
-            text=text,
-            file_path=output_path,
-            speaker_wav=speaker_wav,
-            language=language
-        )
+        """Run XTTS synthesis (blocking operation) with enhanced parameters"""
+        try:
+            # Enhanced XTTS parameters for better voice cloning quality
+            self.xtts_model.tts_to_file(
+                text=text,
+                file_path=output_path,
+                speaker_wav=speaker_wav,
+                language=language,
+                # Additional parameters for better quality (if supported)
+                temperature=0.7,  # Lower temperature for more consistent voice
+                length_penalty=1.0,  # Balanced length penalty
+                repetition_penalty=5.0,  # Higher repetition penalty for natural speech
+                top_k=50,  # Limit vocabulary for consistency
+                top_p=0.8,  # Nucleus sampling for natural variety
+            )
+        except TypeError:
+            # Fallback if advanced parameters not supported
+            self.xtts_model.tts_to_file(
+                text=text,
+                file_path=output_path,
+                speaker_wav=speaker_wav,
+                language=language
+            )
     
     async def _synthesize_fallback(
         self, text: str, voice_sample_path: str, output_path: str, language: str, speed: float
@@ -233,7 +259,7 @@ class VoiceCloningService:
                 os.remove(temp_path)
             
             return {
-                "sample_rate": sr,
+                "sample_rate": int(sr),
                 "method": "fallback"
             }
             
@@ -273,9 +299,9 @@ class VoiceCloningService:
             return basic_audio
     
     async def _process_audio_sample(self, audio_file_path: str, voice_id: str) -> Dict[str, Any]:
-        """Process and validate uploaded audio sample"""
+        """Process and validate uploaded audio sample with enhanced quality"""
         try:
-            # Load audio file
+            # Load audio file with higher quality settings
             audio, sr = librosa.load(audio_file_path, sr=22050)
             
             # Get audio duration
@@ -287,28 +313,123 @@ class VoiceCloningService:
             if duration > 300.0:
                 raise ValueError("Audio sample too long. Maximum 5 minutes allowed.")
             
-            # Trim silence
-            audio_trimmed, _ = librosa.effects.trim(audio, top_db=20)
+            # Enhanced audio preprocessing for better voice cloning
+            # 1. Trim silence more aggressively
+            audio_trimmed, _ = librosa.effects.trim(audio, top_db=25)
             
-            # Normalize audio
-            audio_normalized = librosa.util.normalize(audio_trimmed)
+            # 2. Apply noise reduction using spectral gating
+            audio_denoised = self._apply_noise_reduction(audio_trimmed, sr)
             
-            # Calculate quality score based on audio characteristics
-            quality_score = await self._calculate_audio_quality(audio_normalized, sr)
+            # 3. Normalize with RMS normalization for consistent loudness
+            rms = librosa.feature.rms(y=audio_denoised)[0]
+            target_rms = 0.2  # Target RMS level
+            current_rms = np.sqrt(np.mean(rms**2))
+            if current_rms > 0:
+                audio_normalized = audio_denoised * (target_rms / current_rms)
+            else:
+                audio_normalized = audio_denoised
+            
+            # 4. Apply gentle high-pass filter to remove low-frequency noise
+            audio_filtered = librosa.effects.preemphasis(audio_normalized)
+            
+            # 5. Ensure audio is not clipping
+            audio_final = np.clip(audio_filtered, -0.99, 0.99)
+            
+            # Calculate enhanced quality score
+            quality_score = await self._calculate_enhanced_audio_quality(audio_final, sr)
             
             # Save processed audio to temporary file
             processed_path = os.path.join(tempfile.gettempdir(), f"processed_{voice_id}.wav")
-            sf.write(processed_path, audio_normalized, sr)
+            sf.write(processed_path, audio_final, sr)
             
             return {
-                "duration": duration,
-                "sample_rate": sr,
-                "quality_score": quality_score,
+                "duration": float(duration),
+                "sample_rate": int(sr),
+                "quality_score": float(quality_score),
                 "processed_path": processed_path
             }
             
         except Exception as e:
             raise Exception(f"Audio processing failed: {str(e)}")
+    
+    def _apply_noise_reduction(self, audio: np.ndarray, sr: int) -> np.ndarray:
+        """Apply spectral gating noise reduction"""
+        try:
+            # Compute short-time Fourier transform
+            stft = librosa.stft(audio, n_fft=2048, hop_length=512)
+            magnitude = np.abs(stft)
+            phase = np.angle(stft)
+            
+            # Estimate noise floor from quiet segments
+            frame_energy = np.mean(magnitude, axis=0)
+            noise_threshold = np.percentile(frame_energy, 20)  # Bottom 20% as noise
+            
+            # Create spectral gate mask
+            noise_mask = frame_energy < noise_threshold * 1.5
+            
+            # Apply gentle noise reduction
+            for i, is_noise in enumerate(noise_mask):
+                if is_noise:
+                    magnitude[:, i] *= 0.3  # Reduce noise frames by 70%
+            
+            # Reconstruct audio
+            stft_cleaned = magnitude * np.exp(1j * phase)
+            audio_cleaned = librosa.istft(stft_cleaned, hop_length=512)
+            
+            return audio_cleaned
+            
+        except Exception as e:
+            print(f"Noise reduction failed: {e}")
+            return audio
+    
+    async def _calculate_enhanced_audio_quality(self, audio: np.ndarray, sr: int) -> float:
+        """Calculate enhanced audio quality score with multiple metrics"""
+        try:
+            # 1. Signal-to-Noise Ratio estimation
+            stft = librosa.stft(audio)
+            magnitude = np.abs(stft)
+            
+            # Estimate SNR from spectral characteristics
+            spectral_energy = np.mean(magnitude, axis=1)
+            voice_freq_range = (sr * 85 // sr, sr * 255 // sr)  # Typical voice range
+            voice_energy = np.mean(spectral_energy[voice_freq_range[0]:voice_freq_range[1]])
+            total_energy = np.mean(spectral_energy)
+            snr_score = min(voice_energy / (total_energy + 1e-8), 1.0)
+            
+            # 2. Dynamic range (good speech has varied amplitude)
+            rms = librosa.feature.rms(y=audio)[0]
+            dynamic_range = np.std(rms) / (np.mean(rms) + 1e-8)
+            dynamic_score = min(dynamic_range * 2, 1.0)
+            
+            # 3. Spectral rolloff (speech clarity indicator)
+            rolloff = librosa.feature.spectral_rolloff(y=audio, sr=sr)[0]
+            rolloff_score = min(np.mean(rolloff) / 4000, 1.0)  # Normalize to 4kHz
+            
+            # 4. Zero crossing rate (speech articulation)
+            zcr = librosa.feature.zero_crossing_rate(audio)[0]
+            zcr_mean = np.mean(zcr)
+            zcr_score = min(zcr_mean * 15, 1.0)  # Normalize ZCR
+            
+            # 5. Harmonic-to-noise ratio estimation
+            harmonic, percussive = librosa.effects.hpss(audio)
+            harmonic_energy = np.mean(harmonic**2)
+            percussive_energy = np.mean(percussive**2)
+            hnr_score = harmonic_energy / (harmonic_energy + percussive_energy + 1e-8)
+            
+            # Weighted combination of quality metrics
+            quality_score = (
+                snr_score * 0.25 +           # Signal clarity
+                dynamic_score * 0.15 +       # Dynamic range
+                rolloff_score * 0.2 +        # Spectral content
+                zcr_score * 0.15 +          # Articulation
+                hnr_score * 0.25            # Harmonic content
+            )
+            
+            return round(min(quality_score, 1.0), 2)
+            
+        except Exception as e:
+            print(f"Enhanced quality calculation failed: {e}")
+            return 0.6  # Default moderate quality
     
     async def _calculate_audio_quality(self, audio: np.ndarray, sr: int) -> float:
         """Calculate audio quality score (0.0 to 1.0)"""
@@ -362,13 +483,13 @@ class VoiceCloningService:
                 # Calculate quality score based on successful generation
                 if os.path.exists(test_audio_path):
                     os.remove(test_audio_path)
-                    return {"quality_score": 0.8}  # Good quality if generation succeeded
+                    return {"quality_score": float(0.8)}  # Good quality if generation succeeded
             
-            return {"quality_score": 0.5}  # Default quality
+            return {"quality_score": float(0.5)}  # Default quality
             
         except Exception as e:
             print(f"Voice quality test failed: {e}")
-            return {"quality_score": 0.3}  # Lower quality if test failed
+            return {"quality_score": float(0.3)}  # Lower quality if test failed
     
     def get_voice_sample_path(self, voice_id: str) -> str:
         """Get path to voice sample file"""

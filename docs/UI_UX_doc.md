@@ -376,4 +376,150 @@ interface VoiceControlsProps {
 - **File Format Errors**: Detailed validation errors with format requirements
 - **Graceful Degradation**: Core functionality available without JavaScript
 
+## Development & Styling Troubleshooting
+
+### Tailwind CSS Configuration Issues
+
+During development, we encountered complete styling failure where the UI appeared as plain text without any CSS styling. This section documents the root causes and prevention strategies.
+
+#### Root Causes Identified
+
+**1. Tailwind CSS Version Incompatibility**
+- **Problem**: Used Tailwind CSS v4.1.11 with Next.js 15, but configuration was incompatible
+- **Symptoms**: CSS 404 errors, plain text rendering, no styling applied
+- **Solution**: Downgraded to stable Tailwind CSS v3.4.0
+
+**2. PostCSS Configuration Mismatch**
+```javascript
+// postcss.config.js - INCORRECT for v3
+module.exports = {
+  plugins: {
+    '@tailwindcss/postcss': {},  // v4 syntax
+    autoprefixer: {},
+  },
+};
+
+// postcss.config.js - CORRECT for v3
+module.exports = {
+  plugins: {
+    tailwindcss: {},            // v3 syntax
+    autoprefixer: {},
+  },
+};
+```
+
+**3. Incorrect CSS Import Directives**
+```css
+/* globals.css - INCORRECT v4 syntax */
+@import "tailwindcss";
+
+/* globals.css - CORRECT v3 syntax */
+@tailwind base;
+@tailwind components; 
+@tailwind utilities;
+```
+
+**4. Invalid CSS Custom Properties**
+```css
+/* INCORRECT - Non-existent classes */
+* {
+  @apply border-border;    /* This class doesn't exist */
+}
+body {
+  @apply text-foreground;  /* This class doesn't exist */
+}
+
+/* CORRECT - Valid alternatives */
+* {
+  border-color: hsl(var(--border));
+}
+body {
+  @apply text-gray-900;
+}
+```
+
+#### Prevention Checklist
+
+**Before Starting Development:**
+1. **Verify Version Compatibility**
+   ```bash
+   npm list tailwindcss next
+   # Ensure compatible versions (Next.js 15 + Tailwind 3.4.x)
+   ```
+
+2. **Test Basic Styling Early**
+   - Add simple colored element: `className="bg-red-500"`
+   - Check browser console for CSS loading errors
+   - Verify hot reload updates styling changes
+
+3. **Monitor Development Console**
+   - Watch for CSS 404 errors
+   - Look for PostCSS compilation warnings  
+   - Check Next.js error overlay for build issues
+
+**Configuration Templates:**
+
+```json
+// package.json - Working configuration
+{
+  "dependencies": {
+    "next": "^15.4.4",
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.6"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.0"
+  }
+}
+```
+
+```css
+/* globals.css - Working template */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    /* Other CSS custom properties */
+  }
+  
+  body {
+    @apply bg-gradient-to-br from-red-50 via-yellow-50 to-emerald-50 text-gray-900;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+}
+```
+
+#### Debugging Steps
+1. Check package versions: `npm list tailwindcss postcss autoprefixer`
+2. Verify correct import directives in globals.css
+3. Test simple Tailwind class: `className="bg-red-500"`
+4. Check browser console for CSS loading errors
+5. Restart development server after configuration changes
+6. Clear `.next` cache if styling issues persist
+
+#### Current Design Implementation
+
+The application now successfully implements a **Vietnamese flag-inspired color scheme**:
+
+- **Primary Colors**: Red (#dc2626) representing the Vietnamese flag
+- **Secondary Colors**: Emerald green (#10b981) representing Vietnamese nature  
+- **Accent Colors**: Golden yellow/amber (#d97706) representing the flag's star
+- **Background**: Subtle gradient from red-50 via yellow-50 to emerald-50
+- **Typography**: Clean gradient header text using flag colors
+
+**Visual Features:**
+- Glass-morphism effects with `backdrop-blur-sm`
+- Consistent card shadows and hover states
+- Responsive button styling with gradients
+- Navigation tabs with active state indicators
+- Professional spacing and typography hierarchy
+
+This styling approach creates a culturally appropriate and visually cohesive interface that reflects Vietnamese national colors while maintaining modern design principles.
+
+---
+
 This UI/UX documentation ensures a consistent, accessible, and user-friendly experience for the Vietnamese Text-to-Speech application while supporting the technical requirements outlined in the implementation plan.

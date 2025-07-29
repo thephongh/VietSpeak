@@ -52,22 +52,32 @@ class LocalStorageService:
     
     def get_voice_profile(self, voice_id: str) -> Optional[Dict]:
         """Get voice profile metadata"""
-        profile_path = os.path.join(settings.voices_path, voice_id, "profile.json")
-        if os.path.exists(profile_path):
-            with open(profile_path, 'r', encoding='utf-8') as f:
-                return json.load(f)
+        try:
+            profile_path = os.path.join(settings.voices_path, voice_id, "profile.json")
+            if os.path.exists(profile_path):
+                with open(profile_path, 'r', encoding='utf-8') as f:
+                    return json.load(f)
+        except Exception as e:
+            print(f"Error reading voice profile {voice_id}: {e}")
         return None
     
     def get_all_voice_profiles(self) -> List[Dict]:
         """Get all voice profiles"""
         profiles = []
-        if os.path.exists(settings.voices_path):
-            for voice_id in os.listdir(settings.voices_path):
-                voice_dir = os.path.join(settings.voices_path, voice_id)
-                if os.path.isdir(voice_dir):
-                    profile = self.get_voice_profile(voice_id)
-                    if profile:
-                        profiles.append(profile)
+        try:
+            if os.path.exists(settings.voices_path):
+                for voice_id in os.listdir(settings.voices_path):
+                    voice_dir = os.path.join(settings.voices_path, voice_id)
+                    if os.path.isdir(voice_dir):
+                        try:
+                            profile = self.get_voice_profile(voice_id)
+                            if profile:
+                                profiles.append(profile)
+                        except Exception as e:
+                            print(f"Error loading voice profile {voice_id}: {e}")
+                            continue
+        except Exception as e:
+            print(f"Error accessing voices directory: {e}")
         return profiles
     
     def list_voice_profiles(self) -> List[Dict]:

@@ -158,10 +158,10 @@ export default function Home() {
     <main className="min-h-screen bg-background py-12">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-4">
+          <h1 className="text-5xl font-bold mb-6 bg-gradient-to-r from-red-600 via-amber-600 to-emerald-600 bg-clip-text text-transparent">
             Vietnamese Text-to-Speech
           </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
             AI-powered Vietnamese TTS with voice cloning capabilities. 
             Convert text to natural-sounding speech in Vietnamese, English, and French.
           </p>
@@ -174,30 +174,30 @@ export default function Home() {
               <nav className="-mb-px flex space-x-8">
                 <button
                   onClick={() => setActiveTab('tts')}
-                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  className={`py-3 px-6 border-b-2 font-medium text-sm transition-all duration-200 ${
                     activeTab === 'tts'
-                      ? 'border-primary text-primary'
-                      : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
+                      ? 'border-red-500 text-red-600 bg-gradient-to-r from-red-50 to-amber-50'
+                      : 'border-transparent text-gray-500 hover:text-red-600 hover:border-red-200 hover:bg-red-50'
                   }`}
                 >
                   Text-to-Speech
                 </button>
                 <button
                   onClick={() => setActiveTab('voice-cloning')}
-                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  className={`py-3 px-6 border-b-2 font-medium text-sm transition-all duration-200 ${
                     activeTab === 'voice-cloning'
-                      ? 'border-primary text-primary'
-                      : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
+                      ? 'border-red-500 text-red-600 bg-gradient-to-r from-red-50 to-amber-50'
+                      : 'border-transparent text-gray-500 hover:text-red-600 hover:border-red-200 hover:bg-red-50'
                   }`}
                 >
                   Create Voice
                 </button>
                 <button
                   onClick={() => setActiveTab('voice-library')}
-                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  className={`py-3 px-6 border-b-2 font-medium text-sm transition-all duration-200 ${
                     activeTab === 'voice-library'
-                      ? 'border-primary text-primary'
-                      : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
+                      ? 'border-red-500 text-red-600 bg-gradient-to-r from-red-50 to-amber-50'
+                      : 'border-transparent text-gray-500 hover:text-red-600 hover:border-red-200 hover:bg-red-50'
                   }`}
                 >
                   Voice Library
@@ -211,9 +211,9 @@ export default function Home() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Text Input - Main Column */}
               <div className="lg:col-span-2">
-                <Card>
+                <Card className="bg-white/80 backdrop-blur-sm border-red-100 shadow-lg hover:shadow-xl transition-all duration-300">
                   <CardHeader>
-                    <CardTitle>Text Input</CardTitle>
+                    <CardTitle className="text-gray-800">Text Input</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     <div>
@@ -306,8 +306,14 @@ export default function Home() {
                         onClick={handleGenerateSpeech}
                         disabled={isLoading || !text.trim()}
                         size="lg"
+                        className="relative bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200"
                       >
-                        {isLoading ? 'Generating...' : 'Generate Speech'}
+                        {isLoading && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-red-600 rounded-md">
+                            <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+                          </div>
+                        )}
+                        <span className={isLoading ? 'invisible' : ''}>Generate Speech</span>
                       </Button>
                     </div>
                     
@@ -365,9 +371,9 @@ export default function Home() {
                   />
                   
                   {/* Quick Actions */}
-                  <Card>
+                  <Card className="bg-white/80 backdrop-blur-sm border-red-100 shadow-lg hover:shadow-xl transition-all duration-300">
                     <CardHeader>
-                      <CardTitle className="text-lg">Quick Actions</CardTitle>
+                      <CardTitle className="text-lg text-gray-800">Quick Actions</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3">
                       <Button
@@ -379,8 +385,7 @@ export default function Home() {
                         Clear Text
                       </Button>
                       <Button
-                        variant="outline"
-                        className="w-full"
+                        className="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200"
                         onClick={() => {
                           const sampleText = language === 'vi' 
                             ? 'Xin chào! Đây là mẫu văn bản tiếng Việt để kiểm tra chức năng chuyển đổi văn bản thành giọng nói.'
