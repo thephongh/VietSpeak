@@ -1,0 +1,32 @@
+{
+  "framework": "nextjs",
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
+  "functions": {
+    "app/api/*/route.ts": {
+      "maxDuration": 60
+    }
+  },
+  "env": {
+    "GOOGLE_CLOUD_PROJECT_ID": "@google-cloud-project-id",
+    "GOOGLE_CLOUD_PRIVATE_KEY_ID": "@google-cloud-private-key-id", 
+    "GOOGLE_CLOUD_PRIVATE_KEY": "@google-cloud-private-key",
+    "GOOGLE_CLOUD_CLIENT_EMAIL": "@google-cloud-client-email",
+    "GOOGLE_CLOUD_CLIENT_ID": "@google-cloud-client-id",
+    "GOOGLE_CLOUD_CLIENT_X509_CERT_URL": "@google-cloud-client-x509-cert-url",
+    "ELEVENLABS_API_KEY": "@elevenlabs-api-key",
+    "NEXT_PUBLIC_APP_URL": "@next-public-app-url"
+  },
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Credentials", "value": "true" },
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET,OPTIONS,PATCH,DELETE,POST,PUT" },
+        { "key": "Access-Control-Allow-Headers", "value": "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version" }
+      ]
+    }
+  ]
+}
