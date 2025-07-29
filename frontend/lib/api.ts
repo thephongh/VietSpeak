@@ -5,11 +5,20 @@ export interface TTSRequest {
   language?: string;
   speed?: number;
   voice_id?: string;
+  clean_text?: boolean;
 }
 
 export interface TTSResponse {
   audio_id: string;
   message: string;
+  stats?: {
+    characters: number;
+    words: number;
+    sentences: number;
+    estimated_duration: number;
+  };
+  processed_text?: string;
+  language?: string;
 }
 
 export interface Voice {
