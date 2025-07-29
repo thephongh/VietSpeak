@@ -1,0 +1,91 @@
+# Dependencies
+node_modules/
+*/node_modules/
+venv/
+env/
+.venv/
+
+# Next.js
+.next/
+out/
+build/
+dist/
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Audio files and storage
+storage/audio/*
+storage/uploads/*
+storage/cache/*
+!storage/audio/.gitkeep
+!storage/uploads/.gitkeep
+!storage/cache/.gitkeep
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Audio model files (large)
+storage/models/*.bin
+storage/models/*.pth
+storage/models/*.ckpt
+storage/voices/*/model.*
+
+# Deployment packages
+*.tar.gz
+deploy-instructions-*.txt
+
+# Testing
+coverage/
+.nyc_output
+
+# Misc
+*.tgz
+*.tar.gz
