@@ -1,0 +1,14 @@
+{
+  "voice_id": "3817a71f-c057-41ef-9208-5e9859ddc8a2",
+  "name": "Phong",
+  "description": "",
+  "language": "vi",
+  "created_at": "2025-07-29T12:59:15.872909",
+  "sample_duration": 60.37201814058957,
+  "quality_score": 0.65,
+  "file_info": {
+    "sample_path": "storage/voices/3817a71f-c057-41ef-9208-5e9859ddc8a2/sample.wav",
+    "sample_rate": 22050,
+    "format": "wav"
+  }
+}

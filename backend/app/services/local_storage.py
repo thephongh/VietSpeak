@@ -58,8 +58,8 @@ class LocalStorageService:
                 return json.load(f)
         return None
     
-    def list_voice_profiles(self) -> List[Dict]:
-        """List all voice profiles"""
+    def get_all_voice_profiles(self) -> List[Dict]:
+        """Get all voice profiles"""
         profiles = []
         if os.path.exists(settings.voices_path):
             for voice_id in os.listdir(settings.voices_path):
@@ -69,6 +69,16 @@ class LocalStorageService:
                     if profile:
                         profiles.append(profile)
         return profiles
+    
+    def list_voice_profiles(self) -> List[Dict]:
+        """List all voice profiles (alias for get_all_voice_profiles)"""
+        return self.get_all_voice_profiles()
+    
+    def delete_voice_profile(self, voice_id: str) -> None:
+        """Delete voice profile metadata and directory"""
+        voice_dir = os.path.join(settings.voices_path, voice_id)
+        if os.path.exists(voice_dir):
+            shutil.rmtree(voice_dir)
     
     def cleanup_old_files(self, max_age_hours: int = 24) -> None:
         """Clean up old temporary files"""

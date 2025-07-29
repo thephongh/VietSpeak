@@ -44,6 +44,22 @@ class TTSService:
             if language == 'unknown':
                 language = 'vi'  # Default to Vietnamese
         
+        # Check if this is a cloned voice
+        if voice_id and not voice_id.startswith('gtts_'):
+            # This is a cloned voice, use voice cloning service
+            try:
+                from app.services.voice_cloning_service import VoiceCloningService
+                voice_cloning_service = VoiceCloningService()
+                return await voice_cloning_service.synthesize_with_cloned_voice(
+                    text=processed_text,
+                    voice_id=voice_id,
+                    language=language,
+                    speed=speed
+                )
+            except Exception as e:
+                # Fallback to regular TTS if voice cloning fails
+                print(f"Voice cloning failed, falling back to regular TTS: {e}")
+        
         # Generate unique filename
         audio_id = str(uuid.uuid4())
         temp_path = os.path.join(settings.audio_path, f"{audio_id}_temp.mp3")
@@ -107,8 +123,9 @@ class TTSService:
         return os.path.join(settings.audio_path, f"{audio_id}.wav")
     
     def get_voices(self) -> list:
-        """Get available voices"""
-        return [
+        """Get available voices including cloned voices"""
+        # Default voices
+        default_voices = [
             {
                 "id": "gtts_vi",
                 "name": "Vietnamese (Google)",
@@ -128,3 +145,27 @@ class TTSService:
                 "type": "default"
             }
         ]
+        
+        # Add cloned voices
+        try:
+            from app.services.local_storage import LocalStorageService
+            storage_service = LocalStorageService()
+            voice_profiles = storage_service.get_all_voice_profiles()
+            
+            cloned_voices = [
+                {
+                    "id": profile["voice_id"],
+                    "name": f"{profile['name']} (Cloned)",
+                    "language": profile["language"],
+                    "type": "cloned",
+                    "created_at": profile.get("created_at"),
+                    "quality_score": profile.get("quality_score")
+                }
+                for profile in voice_profiles
+            ]
+            
+            return default_voices + cloned_voices
+            
+        except Exception as e:
+            print(f"Error loading cloned voices: {e}")
+            return default_voices

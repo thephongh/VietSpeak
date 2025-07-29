@@ -1,0 +1,20 @@
+{
+  "original_text": "Test regular synthesis",
+  "processed_text": "Test regular synthesis",
+  "language": "vi",
+  "speed": 1.0,
+  "voice_id": null,
+  "stats": {
+    "characters": 22,
+    "words": 3,
+    "sentences": 1,
+    "estimated_duration": 1
+  },
+  "file_info": {
+    "path": "storage/audio/2170d924-bbdb-40ef-a8ba-9d82d5c4b2e8.wav",
+    "format": "wav",
+    "sample_rate": 22050
+  },
+  "created_at": "2025-07-29T13:02:44.674522",
+  "file_path": "2170d924-bbdb-40ef-a8ba-9d82d5c4b2e8.wav"
+}
