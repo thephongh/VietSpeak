@@ -6,7 +6,12 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "docker:build": "./scripts/docker-build.sh",
+    "docker:run": "docker run -p 3000:3000 --env-file .env.local vietnamese-tts:latest",
+    "docker:compose": "docker-compose up",
+    "docker:compose:build": "docker-compose up --build",
+    "docker:clean": "docker system prune -f && docker image prune -f"
   },
   "dependencies": {
     "@google-cloud/text-to-speech": "^5.8.0",

@@ -1,1 +1,0 @@
-# Vietnamese TTS Backend Application

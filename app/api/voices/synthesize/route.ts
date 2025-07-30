@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { generateSpeech } from '@/lib/elevenlabs';
+import { generateSpeech, getOptimizedVoiceSettings } from '@/lib/elevenlabs';
 import { TextProcessor } from '@/lib/text-processor';
 import { generateId } from '@/lib/utils';
 
@@ -33,6 +33,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate ElevenLabs voice ID format
+    if (typeof elevenlabs_voice_id !== 'string' || elevenlabs_voice_id.trim() === '') {
+      return NextResponse.json(
+        { error: 'Invalid ElevenLabs voice ID format' },
+        { status: 400 }
+      );
+    }
+
     // Validate text content
     const validation = TextProcessor.validateText(text);
     if (!validation.isValid) {
@@ -59,17 +67,40 @@ export async function POST(request: NextRequest) {
     const stats = TextProcessor.getTextStats(processedText);
 
     try {
-      // Generate speech using ElevenLabs
+      // Select appropriate model based on language
+      const getModelForLanguage = (lang: string) => {
+        switch (lang) {
+          case 'vi':
+            return 'eleven_multilingual_v2'; // Best for Vietnamese
+          case 'fr':
+            return 'eleven_multilingual_v2'; // Good for French
+          case 'en':
+            return 'eleven_turbo_v2'; // Fast and good for English
+          default:
+            return 'eleven_multilingual_v2';
+        }
+      };
+
+      // Get optimized settings for the language, but allow user overrides
+      const optimizedSettings = getOptimizedVoiceSettings(language);
+      const finalSettings = {
+        stability: stability !== undefined ? Math.max(0, Math.min(1, stability)) : optimizedSettings.stability,
+        similarity_boost: similarity_boost !== undefined ? Math.max(0, Math.min(1, similarity_boost)) : optimizedSettings.similarity_boost,
+        style: style !== undefined ? Math.max(0, Math.min(1, style)) : optimizedSettings.style,
+        use_speaker_boost: true,
+      };
+
+      // Log voice synthesis request for debugging
+      console.log(`Synthesizing speech for voice: ${voice_id} (ElevenLabs ID: ${elevenlabs_voice_id})`);
+      console.log(`Language: ${language}, Model: ${getModelForLanguage(language)}`);
+      console.log(`Final Settings:`, finalSettings);
+
+      // Generate speech using ElevenLabs with voice-specific settings
       const audioBuffer = await generateSpeech({
         text: processedText,
-        voice_id: elevenlabs_voice_id,
-        model_id: 'eleven_multilingual_v2', // Best model for Vietnamese
-        voice_settings: {
-          stability: Math.max(0, Math.min(1, stability)),
-          similarity_boost: Math.max(0, Math.min(1, similarity_boost)),
-          style: Math.max(0, Math.min(1, style)),
-          use_speaker_boost: true,
-        },
+        voice_id: elevenlabs_voice_id.trim(),
+        model_id: getModelForLanguage(language),
+        voice_settings: finalSettings,
       });
 
       // Convert audio buffer to base64 for client consumption
@@ -94,11 +125,7 @@ export async function POST(request: NextRequest) {
           format: 'mp3',
           sample_rate: 22050, // ElevenLabs default
         },
-        voice_settings: {
-          stability,
-          similarity_boost,
-          style,
-        },
+        voice_settings: finalSettings,
         provider: 'elevenlabs',
       });
 

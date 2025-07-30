@@ -34,11 +34,11 @@ export function VoiceControls({
   isClonedVoice = false,
 }: VoiceControlsProps) {
   return (
-    <Card className="glass-card border-white/20 shadow-lg hover:shadow-xl transition-all duration-300">
+    <Card variant="glass" className="border-white/20 shadow-lg hover:shadow-xl transition-all duration-300">
       <CardHeader className="pb-4">
-        <CardTitle className="flex items-center gap-2 text-lg text-gray-800">
+        <CardTitle gradient className="flex items-center gap-2 text-lg text-gray-800">
           <Settings className="h-5 w-5" />
-          Voice Controls
+          🎛️ Voice Controls
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -138,12 +138,12 @@ export function VoiceControls({
         {/* Reset Button */}
         <div className="pt-2">
           <Button
-            variant="outline"
+            variant="neon"
             onClick={onReset}
-            className="w-full bg-white/20 border-white/30 hover:bg-white/30 transition-all duration-200"
+            className="w-full"
           >
             <RotateCcw className="h-4 w-4 mr-2" />
-            Reset to Defaults
+            🔄 Reset to Defaults
           </Button>
         </div>
 

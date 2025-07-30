@@ -164,12 +164,34 @@ class StorageManager {
     if (typeof window === 'undefined') return;
 
     try {
+      // Don't store audio_data to prevent quota issues
+      const { audio_data, ...audioWithoutData } = audio;
+      
       const history = this.getAudioHistory();
-      // Limit history to 50 items to prevent storage overflow
-      const updated = [audio, ...history.slice(0, 49)];
+      // Limit history to 20 items to prevent storage overflow
+      const updated = [audioWithoutData, ...history.slice(0, 19)];
+      
+      // Check storage size before saving
+      const dataSize = JSON.stringify(updated).length;
+      if (dataSize > 1024 * 1024) { // 1MB limit
+        // Remove oldest items until under limit
+        while (updated.length > 5 && JSON.stringify(updated).length > 1024 * 1024) {
+          updated.pop();
+        }
+      }
+      
       localStorage.setItem(STORAGE_KEYS.AUDIO_HISTORY, JSON.stringify(updated));
     } catch (error) {
       console.error('Error saving audio history:', error);
+      // Clear history if quota exceeded
+      if (error instanceof DOMException && error.name === 'QuotaExceededError') {
+        try {
+          localStorage.removeItem(STORAGE_KEYS.AUDIO_HISTORY);
+          console.log('Cleared audio history due to quota exceeded');
+        } catch (clearError) {
+          console.error('Error clearing audio history:', clearError);
+        }
+      }
     }
   }
 
@@ -204,6 +226,19 @@ class StorageManager {
       localStorage.removeItem(STORAGE_KEYS.AUDIO_HISTORY);
     } catch (error) {
       console.error('Error clearing audio history:', error);
+    }
+  }
+
+  // Utility method to clean up storage
+  cleanupStorage(): void {
+    if (typeof window === 'undefined') return;
+
+    try {
+      // Clear audio history if it exists
+      localStorage.removeItem(STORAGE_KEYS.AUDIO_HISTORY);
+      console.log('Storage cleaned up successfully');
+    } catch (error) {
+      console.error('Error cleaning up storage:', error);
     }
   }
 

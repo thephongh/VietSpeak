@@ -14,7 +14,7 @@ import { VoiceLibrary } from '@/components/tts/voice-library';
 import { apiClient } from '@/lib/api-client';
 import { TextProcessor } from '@/lib/text-processor';
 import { storage } from '@/lib/storage';
-import { Mic, Type, Library, Upload, Sparkles, AlertCircle, Check } from 'lucide-react';
+import { Mic, Type, Library, Upload, Sparkles, AlertCircle, Check, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface Voice {
@@ -170,16 +170,24 @@ export default function Home() {
         default_voice_id: selectedVoice.id,
       });
 
-      // Save to audio history
-      storage.saveAudioHistory({
-        id: response.audio_id,
-        text: text,
-        language: language,
-        voice_id: selectedVoice.id,
-        created_at: new Date().toISOString(),
-        audio_data: response.audio_data,
-        stats: response.stats,
-      });
+      // Save to audio history (without audio_data to save space)
+      try {
+        storage.saveAudioHistory({
+          id: response.audio_id,
+          text: text.substring(0, 200), // Limit text length
+          language: language,
+          voice_id: selectedVoice.id,
+          created_at: new Date().toISOString(),
+          audio_data: '', // Don't store actual audio data
+          stats: response.stats,
+        });
+      } catch (historyError) {
+        console.error('Failed to save audio history:', historyError);
+        // Try to clean up storage if quota exceeded
+        if (historyError instanceof DOMException && historyError.name === 'QuotaExceededError') {
+          storage.cleanupStorage();
+        }
+      }
 
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to generate speech');
@@ -244,40 +252,74 @@ export default function Home() {
   const hasMarkdown = text ? TextProcessor.hasMarkdownFormatting(text) : false;
   const isClonedVoice = selectedVoice?.type === 'cloned';
 
+  const handleClearStorage = () => {
+    if (confirm('This will clear all saved data including audio history, voice preferences, and usage statistics. Are you sure?')) {
+      try {
+        // Clear all storage data
+        storage.clearAllData();
+        setError('');
+        alert('All storage cleared successfully!');
+        
+        // Reload the page to reset the UI state
+        window.location.reload();
+      } catch (err) {
+        setError('Failed to clear storage');
+        console.error('Error clearing storage:', err);
+      }
+    }
+  };
+
   return (
     <main className="min-h-screen py-8">
       <div className="container mx-auto px-4">
         {/* Header */}
-        <div className="text-center mb-12">
+        <div className="text-center mb-12 animate-float relative">
           <div className="flex items-center justify-center gap-3 mb-6">
-            <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-orange-500 rounded-xl flex items-center justify-center shadow-lg">
-              <Sparkles className="h-6 w-6 text-white" />
+            <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-orange-500 rounded-xl flex items-center justify-center shadow-lg neon-glow animate-pulse">
+              <Sparkles className="h-8 w-8 text-white" />
             </div>
-            <h1 className="text-5xl font-bold bg-vietnam-gradient bg-clip-text text-transparent">
-              Vietnamese TTS
+            <h1 className="text-6xl font-bold rainbow-text">
+              TeraVoice
             </h1>
           </div>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            AI-powered Vietnamese Text-to-Speech with voice cloning capabilities. 
-            Convert text to natural-sounding speech in Vietnamese, English, and French.
+          <p className="text-xl text-gray-700 max-w-3xl mx-auto leading-relaxed gradient-text">
+            🎤  Tự nhiên, Sắc nét, Chuẩn cảm xúc.
+            Hỗ trợ phát âm tiếng Việt, Anh, Pháp.
           </p>
+          
+          {/* Clear Storage Button */}
+          <div className="absolute top-0 right-0">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleClearStorage}
+              className="text-gray-600 hover:text-red-600 hover:bg-red-50"
+              title="Clear all saved data"
+            >
+              <Trash2 className="h-4 w-4 mr-1" />
+              Clear Storage
+            </Button>
+          </div>
         </div>
         
         <div className="max-w-7xl mx-auto">
           {/* Tab Navigation */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-3 glass-card border-white/20 mb-8">
-              <TabsTrigger value="tts" className="flex items-center gap-2">
+            <TabsList className="grid w-full grid-cols-3 card-holo border-white/20 mb-8 p-3 min-h-[60px]">
+              <TabsTrigger value="tts" className="flex items-center gap-2 transition-all">
                 <Type className="h-4 w-4" />
-                Text-to-Speech
+                <span className="hidden sm:inline">Text-to-Speech</span>
+                <span className="sm:hidden">TTS</span>
               </TabsTrigger>
-              <TabsTrigger value="voice-cloning" className="flex items-center gap-2">
+              <TabsTrigger value="voice-cloning" className="flex items-center gap-2 transition-all">
                 <Mic className="h-4 w-4" />
-                Create Voice
+                <span className="hidden sm:inline">Create Voice</span>
+                <span className="sm:hidden">Create</span>
               </TabsTrigger>
-              <TabsTrigger value="voice-library" className="flex items-center gap-2">
+              <TabsTrigger value="voice-library" className="flex items-center gap-2 transition-all">
                 <Library className="h-4 w-4" />
-                Voice Library
+                <span className="hidden sm:inline">Voice Library</span>
+                <span className="sm:hidden">Library</span>
               </TabsTrigger>
             </TabsList>
 
@@ -287,19 +329,18 @@ export default function Home() {
                 {/* Main Content */}
                 <div className="lg:col-span-2 space-y-6">
                   {/* Text Input */}
-                  <Card className="glass-card border-white/20 shadow-lg hover:shadow-xl transition-all duration-300">
+                  <Card variant="glass" className="border-white/20 shadow-lg hover:shadow-xl transition-all duration-300">
                     <CardHeader>
-                      <CardTitle className="text-gray-800">Text Input</CardTitle>
+                      <CardTitle gradient className="text-gray-800">✨ Text Input</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-6">
                       <div>
                         <div className="flex items-center justify-between mb-4">
                           <Label htmlFor="text-input">Enter your text</Label>
                           <Button
-                            variant="outline"
+                            variant="neon"
                             size="sm"
                             onClick={() => setShowFileUpload(!showFileUpload)}
-                            className="bg-white/20 border-white/30"
                           >
                             <Upload className="h-4 w-4 mr-2" />
                             {showFileUpload ? 'Manual Input' : 'Upload File'}
@@ -367,7 +408,7 @@ export default function Home() {
                           <select 
                             value={language}
                             onChange={(e) => setLanguage(e.target.value)}
-                            className="w-full p-2 border border-input rounded-md glass bg-white/50"
+                            className="w-full p-2 border border-input rounded-md glass bg-white/80 text-gray-900"
                           >
                             <option value="vi">Vietnamese</option>
                             <option value="en">English</option>
@@ -385,7 +426,7 @@ export default function Home() {
                                 const voice = voices.find(v => v.id === e.target.value);
                                 setSelectedVoice(voice || null);
                               }}
-                              className="w-full p-2 border border-input rounded-md glass bg-white/50"
+                              className="w-full p-2 border border-input rounded-md glass bg-white/80 text-gray-900"
                             >
                               {voices.map((voice) => (
                                 <option key={voice.id} value={voice.id}>
@@ -403,8 +444,8 @@ export default function Home() {
                           onClick={handleGenerateSpeech}
                           disabled={isLoading || !text.trim() || !selectedVoice}
                           size="lg"
-                          variant="vietnam"
-                          className="relative btn-apple flex-1"
+                          variant="primary"
+                          className="relative flex-1"
                         >
                           {isLoading && (
                             <div className="absolute inset-0 flex items-center justify-center bg-red-600 rounded-md">
@@ -482,22 +523,25 @@ export default function Home() {
                     />
                     
                     {/* Quick Actions */}
-                    <Card className="glass-card border-white/20 shadow-lg hover:shadow-xl transition-all duration-300">
+                    <Card variant="holo" className="border-white/20 shadow-lg hover:shadow-xl transition-all duration-300">
                       <CardHeader>
-                        <CardTitle className="text-lg text-gray-800">Quick Actions</CardTitle>
+                        <CardTitle gradient className="text-lg text-gray-800">⚡ Quick Actions</CardTitle>
                       </CardHeader>
                       <CardContent className="space-y-3">
                         <Button
-                          variant="outline"
-                          className="w-full bg-white/20 border-white/30"
-                          onClick={() => setText('')}
+                          variant="neon"
+                          className="w-full"
+                          onClick={() => {
+                            console.log('Clear Text clicked, current text:', text);
+                            setText('');
+                          }}
                           disabled={!text}
                         >
-                          Clear Text
+                          🗑️ Clear Text
                         </Button>
                         <Button
-                          variant="apple"
-                          className="w-full btn-apple"
+                          variant="primary"
+                          className="w-full"
                           onClick={() => {
                             const sampleText = language === 'vi' 
                               ? 'Xin chào! Đây là mẫu văn bản tiếng Việt để kiểm tra chức năng chuyển đổi văn bản thành giọng nói.'
@@ -507,18 +551,19 @@ export default function Home() {
                             setText(sampleText);
                           }}
                         >
-                          Load Sample Text
+                          📝 Load Sample Text
                         </Button>
                         {audioUrl && (
                           <Button
-                            variant="outline"
-                            className="w-full bg-white/20 border-white/30"
+                            variant="neon"
+                            className="w-full"
                             onClick={() => {
+                              console.log('Clear Audio clicked, current audioUrl:', audioUrl);
                               setAudioUrl('');
                               setGenerationStats(null);
                             }}
                           >
-                            Clear Audio
+                            🔇 Clear Audio
                           </Button>
                         )}
                       </CardContent>

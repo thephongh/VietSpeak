@@ -90,17 +90,30 @@ export async function synthesizeText({
 }: GoogleTTSRequest): Promise<GoogleTTSResponse> {
   const client = getGoogleCloudTTSClient();
 
-  // Map language codes to voice names
+  // Get all available voices for validation
+  const allVoices = getAllVoices();
+  
+  // Validate that the requested voice exists and matches the language
+  let selectedVoice = voice;
+  if (voice) {
+    const voiceData = allVoices.find(v => v.id === voice);
+    if (!voiceData || voiceData.language !== language) {
+      console.warn(`Voice ${voice} not found or doesn't match language ${language}. Using default.`);
+      selectedVoice = undefined;
+    }
+  }
+
+  // Map language codes and get default voices
   const getDefaultVoice = (lang: string) => {
     switch (lang) {
       case 'vi':
-        return voice || 'vi-VN-Neural2-A';
+        return 'vi-VN-Neural2-A';
       case 'en':
-        return voice || 'en-US-Neural2-C';
+        return 'en-US-Neural2-C';
       case 'fr':
-        return voice || 'fr-FR-Neural2-A';
+        return 'fr-FR-Neural2-A';
       default:
-        return voice || 'en-US-Neural2-C';
+        return 'en-US-Neural2-C';
     }
   };
 
@@ -117,14 +130,20 @@ export async function synthesizeText({
     }
   };
 
-  const selectedVoice = getDefaultVoice(language);
+  // Use the provided voice if valid, otherwise use default
+  const finalVoice = selectedVoice || getDefaultVoice(language);
   const languageCode = getLanguageCode(language);
+
+
+  // Debug logging
+  console.log(`Google Cloud TTS - Requested voice: ${voice}, Language: ${language}`);
+  console.log(`Google Cloud TTS - Final voice: ${finalVoice}, Language code: ${languageCode}`);
 
   const request = {
     input: { text },
     voice: {
       languageCode,
-      name: selectedVoice,
+      name: finalVoice,
     },
     audioConfig: {
       audioEncoding: 'MP3' as const,
@@ -133,6 +152,9 @@ export async function synthesizeText({
       pitch: Math.max(-20.0, Math.min(20.0, pitch)),
     },
   };
+
+  // Log the exact request being sent to Google Cloud TTS
+  console.log('Google Cloud TTS Request:', JSON.stringify(request, null, 2));
 
   try {
     const [response] = await client.synthesizeSpeech(request);

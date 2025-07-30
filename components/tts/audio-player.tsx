@@ -154,7 +154,7 @@ export function AudioPlayer({ audioUrl, title = 'Generated Audio', onError, clas
               size="icon"
               onClick={togglePlayPause}
               disabled={isLoading}
-              className="h-12 w-12 rounded-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+              className="h-12 w-12 rounded-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
             >
               {isLoading ? (
                 <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" />

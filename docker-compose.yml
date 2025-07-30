@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  tts-vietnam:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - GOOGLE_CLOUD_PROJECT_ID=${GOOGLE_CLOUD_PROJECT_ID}
+      - GOOGLE_CLOUD_PRIVATE_KEY_ID=${GOOGLE_CLOUD_PRIVATE_KEY_ID}
+      - GOOGLE_CLOUD_PRIVATE_KEY=${GOOGLE_CLOUD_PRIVATE_KEY}
+      - GOOGLE_CLOUD_CLIENT_EMAIL=${GOOGLE_CLOUD_CLIENT_EMAIL}
+      - GOOGLE_CLOUD_CLIENT_ID=${GOOGLE_CLOUD_CLIENT_ID}
+      - GOOGLE_CLOUD_CLIENT_X509_CERT_URL=${GOOGLE_CLOUD_CLIENT_X509_CERT_URL}
+      - ELEVENLABS_API_KEY=${ELEVENLABS_API_KEY}
+      - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
+    volumes:
+      # Optional: Mount environment file
+      - ./.env.local:/app/.env.local:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Optional: Add a reverse proxy for production
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - tts-vietnam
+    restart: unless-stopped
+    profiles:
+      - production

@@ -5,6 +5,7 @@ A modern, beautiful Vietnamese Text-to-Speech application built with Next.js 14,
 ## ✨ Features
 
 ### 🎯 Core Features
+
 - **High-Quality Vietnamese TTS** - Google Cloud Neural2 voices
 - **Voice Cloning** - Upload audio samples to create custom voices via ElevenLabs
 - **Multi-Language Support** - Vietnamese, English, and French
@@ -12,6 +13,7 @@ A modern, beautiful Vietnamese Text-to-Speech application built with Next.js 14,
 - **Beautiful Apple-like UI** - Modern glassmorphism design with smooth animations
 
 ### 🎛️ Advanced Controls
+
 - **Voice Speed Control** - Adjust speech rate from 0.25x to 4x
 - **Pitch Adjustment** - Fine-tune voice pitch (-20 to +20)
 - **Stability & Similarity** - Advanced ElevenLabs voice settings
@@ -19,6 +21,7 @@ A modern, beautiful Vietnamese Text-to-Speech application built with Next.js 14,
 - **Audio Export** - Download generated speech as MP3/WAV files
 
 ### 📱 User Experience
+
 - **Responsive Design** - Works perfectly on mobile and desktop
 - **Progressive Web App** - Installable as native app
 - **Real-time Feedback** - Live character count, duration estimates
@@ -28,13 +31,15 @@ A modern, beautiful Vietnamese Text-to-Speech application built with Next.js 14,
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js 18+ 
+
+- Node.js 18+
 - Google Cloud TTS API credentials
 - ElevenLabs API key (for voice cloning)
 
 ### Installation
 
 1. **Clone and setup**
+
    ```bash
    git clone <repository-url>
    cd tts-vietnam
@@ -43,12 +48,14 @@ A modern, beautiful Vietnamese Text-to-Speech application built with Next.js 14,
    ```
 
 2. **Configure environment**
+
    ```bash
    cp .env.example .env.local
    # Edit .env.local with your API credentials
    ```
 
 3. **Run development server**
+
    ```bash
    npm run dev
    ```
@@ -63,13 +70,15 @@ A modern, beautiful Vietnamese Text-to-Speech application built with Next.js 14,
 ### Google Cloud TTS Setup
 
 1. **Create Google Cloud Project**
+
    - Go to [Google Cloud Console](https://console.cloud.google.com)
    - Create new project or select existing
    - Enable Text-to-Speech API
 
 2. **Create Service Account**
+
    - Navigate to IAM & Admin > Service Accounts
-   - Create service account with Text-to-Speech User role
+   - Create service account with Cloud Speech Client role
    - Download JSON key file
 
 3. **Configure Environment Variables**
@@ -85,6 +94,7 @@ A modern, beautiful Vietnamese Text-to-Speech application built with Next.js 14,
 ### ElevenLabs Setup (Voice Cloning)
 
 1. **Get API Key**
+
    - Sign up at [ElevenLabs](https://elevenlabs.io)
    - Go to Profile > API Keys
    - Generate new API key
@@ -99,7 +109,9 @@ A modern, beautiful Vietnamese Text-to-Speech application built with Next.js 14,
 ### Text-to-Speech Endpoints
 
 #### `POST /api/tts/synthesize`
+
 Generate speech using Google Cloud TTS
+
 ```json
 {
   "text": "Xin chào Việt Nam!",
@@ -111,7 +123,9 @@ Generate speech using Google Cloud TTS
 ```
 
 #### `GET /api/tts/voices`
+
 Get available Google Cloud voices
+
 ```json
 {
   "voices": [
@@ -128,16 +142,20 @@ Get available Google Cloud voices
 ### Voice Cloning Endpoints
 
 #### `POST /api/voices/clone`
+
 Create custom voice using ElevenLabs
+
 ```javascript
 const formData = new FormData();
-formData.append('name', 'My Voice');
-formData.append('description', 'Custom Vietnamese voice');
-formData.append('audio_file', audioFile);
+formData.append("name", "My Voice");
+formData.append("description", "Custom Vietnamese voice");
+formData.append("audio_file", audioFile);
 ```
 
 #### `POST /api/voices/synthesize`
+
 Generate speech with cloned voice
+
 ```json
 {
   "text": "Hello from my cloned voice!",
@@ -150,16 +168,19 @@ Generate speech with cloned voice
 ## 🎨 Design System
 
 ### Color Palette
+
 - **Primary**: Vietnam flag inspired red-gold gradient
 - **Secondary**: Clean whites and soft grays
 - **Accent**: Subtle blues and greens for interactions
 
 ### Typography
+
 - **Display**: Inter with weighted hierarchy
 - **Body**: Clean, readable font stack
 - **Code**: JetBrains Mono for technical elements
 
 ### Components
+
 - **Glass Cards**: Translucent backgrounds with blur effects
 - **Smooth Animations**: Framer Motion powered transitions
 - **Apple-style Buttons**: Subtle shadows and hover states
@@ -170,12 +191,14 @@ Generate speech with cloned voice
 ### Vercel (Recommended)
 
 1. **Deploy to Vercel**
+
    ```bash
    npm run build
    npx vercel --prod
    ```
 
 2. **Configure Environment Variables**
+
    - Add all .env variables in Vercel dashboard
    - Ensure GOOGLE_CLOUD_PRIVATE_KEY is properly escaped
 
@@ -192,15 +215,18 @@ Generate speech with cloned voice
 ## 💰 Cost Estimates
 
 ### Google Cloud TTS
+
 - **Free Tier**: 1M characters/month (Neural2/WaveNet), 4M chars/month (Standard)
 - **Paid**: $16/1M characters (Neural2), $4/1M characters (Standard)
 
 ### ElevenLabs
+
 - **Free Tier**: 10K characters/month
 - **Creator**: $5/month (30K characters)
 - **Pro**: $22/month (100K characters)
 
 ### Hosting
+
 - **Vercel**: Free for personal projects, $20/month for teams
 - **Total Estimated Cost**: $0-50/month for most applications
 

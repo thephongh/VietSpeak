@@ -5,7 +5,7 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Vietnamese TTS - AI-Powered Text-to-Speech',
+  title: 'AI-Powered Text-to-Speech',
   description: 'AI-powered Vietnamese Text-to-Speech with voice cloning capabilities. Convert text to natural-sounding speech in Vietnamese, English, and French.',
   keywords: ['TTS', 'Text-to-Speech', 'Vietnamese', 'Voice Cloning', 'AI', 'Speech Synthesis'],
   authors: [{ name: 'TTS Vietnam Team' }],

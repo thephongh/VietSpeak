@@ -61,19 +61,24 @@ export async function cloneVoice({
     formData.append('name', name);
     formData.append('description', description || `Cloned voice: ${name}`);
     
-    // Add labels as JSON
+    // Enhanced labels for better voice differentiation
     const voiceLabels = {
-      accent: 'vietnamese',
-      age: 'adult',
-      gender: 'unknown',
+      accent: labels.accent || (labels.language === 'fr' ? 'french' : labels.language === 'vi' ? 'vietnamese' : 'unknown'),
+      age: labels.age || 'adult',
+      gender: labels.gender || 'unknown',
       use_case: 'text-to-speech',
       created_by: 'tts-vietnam-app',
+      language: labels.language || 'vi',
+      timestamp: new Date().toISOString(),
       ...labels,
     };
     formData.append('labels', JSON.stringify(voiceLabels));
 
-    // Add audio files
-    for (const file of files) {
+    // Add audio files with validation
+    console.log(`Cloning voice "${name}" with ${files.length} audio files`);
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      console.log(`Adding file ${i + 1}: ${file.name} (${file.size} bytes)`);
       formData.append('files', file);
     }
 
@@ -85,10 +90,12 @@ export async function cloneVoice({
 
     if (!response.ok) {
       const errorText = await response.text();
+      console.error(`Voice cloning failed for "${name}":`, errorText);
       throw new Error(`ElevenLabs API error: ${response.status} - ${errorText}`);
     }
 
     const result = await response.json();
+    console.log(`Successfully cloned voice "${name}" with ID: ${result.voice_id}`);
 
     return {
       voice_id: result.voice_id,
@@ -117,23 +124,42 @@ export async function generateSpeech({
   },
 }: TextToSpeechRequest): Promise<Buffer> {
   try {
+    // Ensure voice_id is properly formatted and not empty
+    if (!voice_id || voice_id.trim() === '') {
+      throw new Error('Voice ID is required and cannot be empty');
+    }
+
+    console.log(`Generating speech with voice_id: ${voice_id}, model: ${model_id}`);
+    console.log('Voice settings:', voice_settings);
+
+    const requestBody = {
+      text,
+      model_id,
+      voice_settings: {
+        stability: Math.max(0, Math.min(1, voice_settings.stability || 0.5)),
+        similarity_boost: Math.max(0, Math.min(1, voice_settings.similarity_boost || 0.8)),
+        style: Math.max(0, Math.min(1, voice_settings.style || 0.0)),
+        use_speaker_boost: voice_settings.use_speaker_boost !== false,
+      },
+    };
+
     const response = await fetch(`${ELEVENLABS_API_BASE}/text-to-speech/${voice_id}`, {
       method: 'POST',
       headers: getApiHeaders(),
-      body: JSON.stringify({
-        text,
-        model_id,
-        voice_settings,
-      }),
+      body: JSON.stringify(requestBody),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
+      console.error(`ElevenLabs API error for voice ${voice_id}:`, errorText);
       throw new Error(`ElevenLabs API error: ${response.status} - ${errorText}`);
     }
 
     const arrayBuffer = await response.arrayBuffer();
-    return Buffer.from(arrayBuffer);
+    const audioBuffer = Buffer.from(arrayBuffer);
+    
+    console.log(`Generated audio for voice ${voice_id}: ${audioBuffer.length} bytes`);
+    return audioBuffer;
 
   } catch (error) {
     console.error('ElevenLabs TTS error:', error);
@@ -249,6 +275,43 @@ export function validateAudioFile(file: File): { isValid: boolean; error?: strin
   }
   
   return { isValid: true };
+}
+
+// Helper function to get optimized voice settings based on language and voice characteristics
+export function getOptimizedVoiceSettings(language: string, voiceLabels?: any) {
+  const baseSettings = {
+    stability: 0.5,
+    similarity_boost: 0.8,
+    style: 0.0,
+    use_speaker_boost: true,
+  };
+
+  // Language-specific optimizations
+  switch (language) {
+    case 'fr':
+      return {
+        ...baseSettings,
+        stability: 0.6, // Slightly more stable for French
+        similarity_boost: 0.9, // Higher similarity for French pronunciation
+        style: 0.1, // Slight style for French expressiveness
+      };
+    case 'vi':
+      return {
+        ...baseSettings,
+        stability: 0.5,
+        similarity_boost: 0.85,
+        style: 0.05,
+      };
+    case 'en':
+      return {
+        ...baseSettings,
+        stability: 0.4, // More dynamic for English
+        similarity_boost: 0.8,
+        style: 0.2,
+      };
+    default:
+      return baseSettings;
+  }
 }
 
 // Helper function to estimate voice cloning quality
