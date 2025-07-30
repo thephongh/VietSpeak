@@ -279,7 +279,7 @@ export default function Home() {
               <Sparkles className="h-10 w-10 text-blue-600" />
             </div>
             <h1 className="hero-text">
-              TeraVoice
+              VietSpeak
             </h1>
           </div>
           <p className="h2-text max-w-3xl mx-auto leading-relaxed">

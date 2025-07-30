@@ -62,16 +62,19 @@ export async function cloneVoice({
     formData.append('description', description || `Cloned voice: ${name}`);
     
     // Enhanced labels for better voice differentiation
-    const voiceLabels = {
-      accent: labels.accent || (labels.language === 'fr' ? 'french' : labels.language === 'vi' ? 'vietnamese' : 'unknown'),
-      age: labels.age || 'adult',
-      gender: labels.gender || 'unknown',
-      use_case: 'text-to-speech',
-      created_by: 'tts-vietnam-app',
+    // ElevenLabs API only allows maximum 5 labels
+    const baseLabels = {
       language: labels.language || 'vi',
-      timestamp: new Date().toISOString(),
-      ...labels,
+      accent: labels.accent || (labels.language === 'fr' ? 'french' : labels.language === 'vi' ? 'vietnamese' : 'unknown'),
+      created_by: 'tts-vietnam-app',
+      use_case: 'text-to-speech',
+      ...(labels.gender && { gender: labels.gender }),
     };
+    
+    // Merge with custom labels and limit to 5 total
+    const allLabels = { ...baseLabels, ...labels };
+    const labelEntries = Object.entries(allLabels);
+    const voiceLabels = Object.fromEntries(labelEntries.slice(0, 5));
     formData.append('labels', JSON.stringify(voiceLabels));
 
     // Add audio files with validation
