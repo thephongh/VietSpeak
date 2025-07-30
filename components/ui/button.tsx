@@ -23,6 +23,7 @@ const buttonVariants = cva(
         glass: "glass-card text-gray-800 hover:shadow-lg",
         neon: "btn-neon",
         primary: "btn-primary",
+        "liquid-glass": "liquid-glass-button",
       },
       size: {
         default: "h-10 px-4 py-2",

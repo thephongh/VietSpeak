@@ -1,8 +1,5 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
 import './globals.css'
-
-const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'AI-Powered Text-to-Speech',
@@ -29,16 +26,17 @@ export default function RootLayout({
         <link rel="icon" href="/favicon.ico" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
       </head>
-      <body className={`${inter.className} antialiased`}>
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-red-50">
-          {/* Background decoration */}
+      <body className="antialiased">
+        <div className="min-h-screen">
+          {/* Apple-style background with subtle gradients */}
           <div className="fixed inset-0 overflow-hidden pointer-events-none">
-            <div className="absolute -top-40 -right-40 w-80 h-80 rounded-full bg-gradient-to-br from-red-400/20 to-orange-400/20 animate-float" />
-            <div className="absolute -bottom-40 -left-40 w-80 h-80 rounded-full bg-gradient-to-br from-green-400/20 to-blue-400/20 animate-float" style={{ animationDelay: '-3s' }} />
-            <div className="absolute top-1/2 left-1/2 w-60 h-60 rounded-full bg-gradient-to-br from-yellow-400/20 to-red-400/20 animate-float" style={{ animationDelay: '-1.5s' }} />
+            <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-white to-blue-50/30" />
+            <div className="absolute -top-40 -right-40 w-80 h-80 rounded-full bg-gradient-to-br from-blue-400/10 to-indigo-400/10 animate-float" />
+            <div className="absolute -bottom-40 -left-40 w-80 h-80 rounded-full bg-gradient-to-br from-purple-400/10 to-pink-400/10 animate-float" style={{ animationDelay: '-3s' }} />
+            <div className="absolute top-1/3 right-1/4 w-60 h-60 rounded-full bg-gradient-to-br from-cyan-400/10 to-blue-400/10 animate-float" style={{ animationDelay: '-1.5s' }} />
           </div>
           
-          {/* Main content */}
+          {/* Main content with Apple Liquid Glass styling */}
           <div className="relative z-10">
             {children}
           </div>

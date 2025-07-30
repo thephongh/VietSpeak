@@ -272,40 +272,39 @@ export default function Home() {
   return (
     <main className="min-h-screen py-8">
       <div className="container mx-auto px-4">
-        {/* Header */}
+        {/* Header with Apple Liquid Glass styling */}
         <div className="text-center mb-12 animate-float relative">
-          <div className="flex items-center justify-center gap-3 mb-6">
-            <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-orange-500 rounded-xl flex items-center justify-center shadow-lg neon-glow animate-pulse">
-              <Sparkles className="h-8 w-8 text-white" />
+          <div className="flex items-center justify-center gap-4 mb-6">
+            <div className="w-20 h-20 liquid-glass-card rounded-2xl flex items-center justify-center shadow-lg p-2">
+              <Sparkles className="h-10 w-10 text-blue-600" />
             </div>
-            <h1 className="text-6xl font-bold rainbow-text">
+            <h1 className="hero-text">
               TeraVoice
             </h1>
           </div>
-          <p className="text-xl text-gray-700 max-w-3xl mx-auto leading-relaxed gradient-text">
+          <p className="h2-text max-w-3xl mx-auto leading-relaxed">
             🎤  Tự nhiên, Sắc nét, Chuẩn cảm xúc.
-            Hỗ trợ phát âm tiếng Việt, Anh, Pháp.
+            <br />
+            <span className="body-text">Hỗ trợ phát âm tiếng Việt, Anh, Pháp.</span>
           </p>
           
           {/* Clear Storage Button */}
           <div className="absolute top-0 right-0">
-            <Button
-              variant="ghost"
-              size="sm"
+            <button
               onClick={handleClearStorage}
-              className="text-gray-600 hover:text-red-600 hover:bg-red-50"
+              className="liquid-glass-button text-sm px-3 py-2 text-gray-600 hover:text-red-600"
               title="Clear all saved data"
             >
               <Trash2 className="h-4 w-4 mr-1" />
               Clear Storage
-            </Button>
+            </button>
           </div>
         </div>
         
         <div className="max-w-7xl mx-auto">
-          {/* Tab Navigation */}
+          {/* Apple Liquid Glass Navigation */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-3 card-holo border-white/20 mb-8 p-3 min-h-[60px]">
+            <TabsList className="grid w-full grid-cols-3 liquid-glass-navigation mb-8 p-3 min-h-[60px]">
               <TabsTrigger value="tts" className="flex items-center gap-2 transition-all">
                 <Type className="h-4 w-4" />
                 <span className="hidden sm:inline">Text-to-Speech</span>
@@ -328,23 +327,22 @@ export default function Home() {
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Main Content */}
                 <div className="lg:col-span-2 space-y-6">
-                  {/* Text Input */}
-                  <Card variant="glass" className="border-white/20 shadow-lg hover:shadow-xl transition-all duration-300">
+                  {/* Text Input with Apple Liquid Glass */}
+                  <Card className="liquid-glass-card">
                     <CardHeader>
-                      <CardTitle gradient className="text-gray-800">✨ Text Input</CardTitle>
+                      <CardTitle className="h2-text">✨ Text Input</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-6">
                       <div>
                         <div className="flex items-center justify-between mb-4">
                           <Label htmlFor="text-input">Enter your text</Label>
-                          <Button
-                            variant="neon"
-                            size="sm"
+                          <button
+                            className="liquid-glass-button text-sm px-4 py-2"
                             onClick={() => setShowFileUpload(!showFileUpload)}
                           >
                             <Upload className="h-4 w-4 mr-2" />
                             {showFileUpload ? 'Manual Input' : 'Upload File'}
-                          </Button>
+                          </button>
                         </div>
                         
                         {showFileUpload ? (
@@ -356,12 +354,12 @@ export default function Home() {
                             description="Upload a text file to extract content"
                           />
                         ) : (
-                          <Textarea
+                          <textarea
                             id="text-input"
                             placeholder="Enter your Vietnamese, English, or French text here..."
                             value={text}
                             onChange={(e) => setText(e.target.value)}
-                            className="min-h-32 glass bg-white/50 border-white/30"
+                            className="min-h-32 w-full liquid-glass-input resize-none"
                           />
                         )}
                       </div>
@@ -408,7 +406,7 @@ export default function Home() {
                           <select 
                             value={language}
                             onChange={(e) => setLanguage(e.target.value)}
-                            className="w-full p-2 border border-input rounded-md glass bg-white/80 text-gray-900"
+                            className="w-full liquid-glass-input"
                           >
                             <option value="vi">Vietnamese</option>
                             <option value="en">English</option>
@@ -426,7 +424,7 @@ export default function Home() {
                                 const voice = voices.find(v => v.id === e.target.value);
                                 setSelectedVoice(voice || null);
                               }}
-                              className="w-full p-2 border border-input rounded-md glass bg-white/80 text-gray-900"
+                              className="w-full liquid-glass-input"
                             >
                               {voices.map((voice) => (
                                 <option key={voice.id} value={voice.id}>
@@ -440,23 +438,21 @@ export default function Home() {
                       
                       {/* Generate Button */}
                       <div className="flex gap-4">
-                        <Button 
+                        <button
                           onClick={handleGenerateSpeech}
                           disabled={isLoading || !text.trim() || !selectedVoice}
-                          size="lg"
-                          variant="primary"
-                          className="relative flex-1"
+                          className="liquid-glass-button flex-1 relative disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           {isLoading && (
-                            <div className="absolute inset-0 flex items-center justify-center bg-red-600 rounded-md">
-                              <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+                            <div className="absolute inset-0 flex items-center justify-center bg-blue-600/20 rounded-xl backdrop-blur-sm">
+                              <div className="animate-spin rounded-full h-5 w-5 border-2 border-blue-600 border-t-transparent"></div>
                             </div>
                           )}
                           <span className={isLoading ? 'invisible' : 'flex items-center gap-2'}>
                             <Sparkles className="h-4 w-4" />
                             Generate Speech
                           </span>
-                        </Button>
+                        </button>
                       </div>
                       
                       {/* Error Display */}
@@ -523,14 +519,13 @@ export default function Home() {
                     />
                     
                     {/* Quick Actions */}
-                    <Card variant="holo" className="border-white/20 shadow-lg hover:shadow-xl transition-all duration-300">
-                      <CardHeader>
-                        <CardTitle gradient className="text-lg text-gray-800">⚡ Quick Actions</CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-3">
-                        <Button
-                          variant="neon"
-                          className="w-full"
+                    <div className="liquid-glass-card">
+                      <div className="mb-4">
+                        <h3 className="h2-text text-lg">⚡ Quick Actions</h3>
+                      </div>
+                      <div className="space-y-3">
+                        <button
+                          className="liquid-glass-button w-full"
                           onClick={() => {
                             console.log('Clear Text clicked, current text:', text);
                             setText('');
@@ -538,10 +533,9 @@ export default function Home() {
                           disabled={!text}
                         >
                           🗑️ Clear Text
-                        </Button>
-                        <Button
-                          variant="primary"
-                          className="w-full"
+                        </button>
+                        <button
+                          className="liquid-glass-button w-full"
                           onClick={() => {
                             const sampleText = language === 'vi' 
                               ? 'Xin chào! Đây là mẫu văn bản tiếng Việt để kiểm tra chức năng chuyển đổi văn bản thành giọng nói.'
@@ -552,11 +546,10 @@ export default function Home() {
                           }}
                         >
                           📝 Load Sample Text
-                        </Button>
+                        </button>
                         {audioUrl && (
-                          <Button
-                            variant="neon"
-                            className="w-full"
+                          <button
+                            className="liquid-glass-button w-full"
                             onClick={() => {
                               console.log('Clear Audio clicked, current audioUrl:', audioUrl);
                               setAudioUrl('');
@@ -564,10 +557,10 @@ export default function Home() {
                             }}
                           >
                             🔇 Clear Audio
-                          </Button>
+                          </button>
                         )}
-                      </CardContent>
-                    </Card>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
